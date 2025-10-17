@@ -2,6 +2,7 @@ library(shiny)
 library(DBI)
 library(RPostgres)
 library(DT)
+library(leaflet)
 
 
 # Obtener las variables de entorno para la conexión
@@ -12,8 +13,6 @@ db_port <- as.numeric(Sys.getenv("db_port")) # Asegúrate de convertir el puerto
 db_name <- Sys.getenv("db_name")
 
 ##Codigo para conectarnos a sql usando dplyr
-library(DBI)
-library(RPostgres)
 buig <- DBI::dbConnect(
   RPostgres::Postgres(),
   dbname=db_name,
@@ -37,7 +36,8 @@ ui <- fluidPage(
     ),
     column(
       width = 8,
-      DTOutput("vista_tabla")
+      DTOutput("vista_tabla"),
+      leafletOutput("mapa")
     )
   )
 )
@@ -62,16 +62,61 @@ server <- function(input, output, session) {
   })
   
   # Tabla
-  output$vista_tabla = renderDT({
+  
+  datos_reactivos <- reactive({
     req(input$tabla)
+    
     if (!DBI::dbIsValid(buig)) {
-      return(DT::datatable(data.frame(Error = "Conexión no válida")))
+      return(NULL)
     }
+    
     datos = DBI::dbReadTable(buig, input$tabla)
+    
+    datos = datos |> 
+      dplyr::slice_head(n = 20) |> 
+      dplyr::collect() |> 
+      dplyr::mutate(geom = sf::st_as_sfc(geom, EWKB = TRUE))
+    
+    cat("Vamos imprimir datos\n")
+    print(datos)
+    
+    coordenadas = sf::st_coordinates(datos$geom[1])[1, 1]
+    if (coordenadas > 30) {
+      datos = datos |> sf::st_as_sf(crs = 32614) |> sf::st_transform(crs = 4326) |> sf::st_zm()
+    } else {
+      datos = datos |> sf::st_as_sf(crs = 4326) |> sf::st_zm()
+    }
+    
+    return(datos)
+  })
+  
+  
+  
+  
+  output$vista_tabla <- renderDT({
+    datos = datos_reactivos()
+    
     if (is.null(datos)) {
       DT::datatable(data.frame(Error = paste("No se pudo leer la tabla:", input$tabla)))
     } else {
       DT::datatable(datos, options = list(pageLength = 10))
+    }
+  })
+  
+  
+  output$mapa <- renderLeaflet({ 
+    datos = datos_reactivos()
+    
+    leaflet() |> 
+      addTiles() |> 
+      addMarkers(data = datos)
+  }) 
+  
+
+  session$onSessionEnded(function() {
+    if (DBI::dbIsValid(buig)) {
+      DBI::dbDisconnect(buig)
+      message("Conexión a PostgreSQL cerrada exitosamente.")
     }
   })
 }
