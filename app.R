@@ -24,6 +24,9 @@ buig <- pool::dbPool(
   password = db_pass
 )
 
+onStop(function() {
+  pool::poolClose(buig)
+})
 
 
 Lista_BUIG= pool::dbListTables(buig) |> as.list()
@@ -45,13 +48,6 @@ ui <- fluidPage(
 
 
 server <- function(input, output, session) {
-  
-  onStop(function() {
-    pool::poolClose(buig)
-    message("Conexión con la base de datos cerrada correctamente.")
-  })
-  
-  # Tabla
   
   datos_reactivos <- reactive({
     req(input$tabla)
@@ -75,7 +71,7 @@ server <- function(input, output, session) {
   
   
   
-  
+  # Tabla
   output$vista_tabla <- renderDT({
     datos = datos_reactivos()
     
@@ -86,7 +82,7 @@ server <- function(input, output, session) {
     }
   })
   
-  
+  # Mapa
   output$mapa <- renderLeaflet({ 
     datos = datos_reactivos()
     
