@@ -3,9 +3,10 @@ library(DBI)
 library(RPostgres)
 library(DT)
 library(leaflet)
+library(pool)
 
 
-# Obtener las variables de entorno para la conexión
+# # Obtener las variables de entorno para la conexión
 db_host <- Sys.getenv("db_host")
 db_user <- Sys.getenv("db_user")
 db_pass <- Sys.getenv("db_pass")
@@ -13,26 +14,25 @@ db_port <- as.numeric(Sys.getenv("db_port")) # Asegúrate de convertir el puerto
 db_name <- Sys.getenv("db_name")
 
 ##Codigo para conectarnos a sql usando dplyr
-buig <- DBI::dbConnect(
-  RPostgres::Postgres(),
-  dbname=db_name,
+buig <- pool::dbPool(
+  drv = RPostgres::Postgres(),
+  dbname = db_name,
   host = db_host,
   port = db_port,
   user = db_user,
   password = db_pass
 )
-#DBI::dbExecute(buig, "SET search_path TO emergencia;")
 
 
-Lista_BUIG=DBI::dbListTables(buig) |> as.list()
+
+Lista_BUIG= pool::dbListTables(buig) |> as.list()
+
 
 ui <- fluidPage(
   fluidRow(
     column(
       width = 4,
       selectInput(inputId = "tabla", label =  "Selecciona una tabla:", choices = Lista_BUIG),
-      verbatimTextOutput("estado_conexion"),
-      actionButton(inputId = "reconectar", label = "Reconectar DB")
     ),
     column(
       width = 8,
@@ -45,20 +45,9 @@ ui <- fluidPage(
 
 server <- function(input, output, session) {
   
-
-  # Botón para reconectar
-  observeEvent(input$reconectar, {
-    try({
-      buig <<- DBI::dbConnect(
-        RPostgres::Postgres(),
-        dbname = db_name,
-        host = db_host,
-        port = db_port,
-        user = db_user,
-        password = db_pass
-      )
-      showNotification("Conexión restablecida correctamente.", type = "message")
-    }, silent = TRUE)
+  onStop(function() {
+    pool::poolClose(buig)
+    message("Conexión con la base de datos cerrada correctamente.")
   })
   
   # Tabla
@@ -66,19 +55,12 @@ server <- function(input, output, session) {
   datos_reactivos <- reactive({
     req(input$tabla)
     
-    if (!DBI::dbIsValid(buig)) {
-      return(NULL)
-    }
     
-    datos = DBI::dbReadTable(buig, input$tabla)
-    
-    datos = datos |> 
-      dplyr::slice_head(n = 20) |> 
-      dplyr::collect() |> 
+    datos = dplyr::tbl(buig, input$tabla) |>
+      head() |>
+      dplyr::collect() |>
       dplyr::mutate(geom = sf::st_as_sfc(geom, EWKB = TRUE))
     
-    cat("Vamos imprimir datos\n")
-    print(datos)
     
     coordenadas = sf::st_coordinates(datos$geom[1])[1, 1]
     if (coordenadas > 30) {
@@ -111,15 +93,8 @@ server <- function(input, output, session) {
       addTiles() |> 
       addMarkers(data = datos)
   }) 
-  
-
-  # session$onSessionEnded(function() {
-  #   if (DBI::dbIsValid(buig)) {
-  #     DBI::dbDisconnect(buig)
-  #     message("Conexión a PostgreSQL cerrada exitosamente.")
-  #   }
-  # })
 }
+
 
 
 shinyApp(ui, server)
