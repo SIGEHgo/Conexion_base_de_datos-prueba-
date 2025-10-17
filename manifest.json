@@ -1628,6 +1628,41 @@
         "Archs": "x64"
       }
     },
+    "pool": {
+      "Source": "CRAN",
+      "Repository": "https://cran.rstudio.com",
+      "description": {
+        "Type": "Package",
+        "Package": "pool",
+        "Title": "Object Pooling",
+        "Version": "1.0.4",
+        "Authors@R": "c(\n    person(\"Joe\", \"Cheng\", , \"joe@posit.co\", role = \"aut\"),\n    person(\"Barbara\", \"Borges\", role = \"aut\"),\n    person(\"Hadley\", \"Wickham\", , \"hadley@posit.co\", role = c(\"aut\", \"cre\")),\n    person(\"Posit Software, PBC\", role = c(\"cph\", \"fnd\"))\n  )",
+        "Description": "Enables the creation of object pools, which make it less\n    computationally expensive to fetch a new object. Currently the only\n    supported pooled objects are 'DBI' connections.",
+        "License": "MIT + file LICENSE",
+        "URL": "https://github.com/rstudio/pool, https://rstudio.github.io/pool/",
+        "BugReports": "https://github.com/rstudio/pool/issues",
+        "Depends": "methods, R (>= 3.6.0)",
+        "Imports": "DBI (>= 1.2.1), later (>= 1.0.0), R6, rlang (>= 1.0.0)",
+        "Suggests": "covr, dbplyr (>= 2.4.0), dplyr, knitr, rmarkdown, RSQLite,\nshiny, testthat (>= 3.0.0), tibble",
+        "VignetteBuilder": "knitr",
+        "Config/Needs/website": "tidyverse/tidytemplate",
+        "Config/testthat/edition": "3",
+        "Encoding": "UTF-8",
+        "RoxygenNote": "7.3.2",
+        "NeedsCompilation": "no",
+        "Packaged": "2024-10-07 14:58:02 UTC; hadleywickham",
+        "Author": "Joe Cheng [aut],\n  Barbara Borges [aut],\n  Hadley Wickham [aut, cre],\n  Posit Software, PBC [cph, fnd]",
+        "Maintainer": "Hadley Wickham <hadley@posit.co>",
+        "Repository": "CRAN",
+        "Date/Publication": "2024-10-07 15:30:02 UTC",
+        "Built": "R 4.4.3; ; 2025-10-13 10:02:31 UTC; windows",
+        "RemoteType": "standard",
+        "RemotePkgRef": "pool",
+        "RemoteRef": "pool",
+        "RemoteRepos": "https://cran.rstudio.com",
+        "RemoteSha": "1.0.4"
+      }
+    },
     "promises": {
       "Source": "CRAN",
       "Repository": "https://cran.rstudio.com",
@@ -2421,8 +2456,11 @@
     }
   },
   "files": {
+    ".RData": {
+      "checksum": "a6acc811a4f2658571756ee35ddcfd65"
+    },
     "app.R": {
-      "checksum": "0218f47906ccb45e05a10fff3400ad47"
+      "checksum": "cb1178aa6321f20e603c0b58439b423b"
     },
     "Codigos/db_con.R": {
       "checksum": "7439416f76984184c2a4019809b32cf6"
