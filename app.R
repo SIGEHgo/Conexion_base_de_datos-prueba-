@@ -4,6 +4,7 @@ library(RPostgres)
 library(DT)
 library(leaflet)
 library(pool)
+library(dbplyr)
 
 
 # # Obtener las variables de entorno para la conexión
