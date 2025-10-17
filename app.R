@@ -113,12 +113,12 @@ server <- function(input, output, session) {
   }) 
   
 
-  session$onSessionEnded(function() {
-    if (DBI::dbIsValid(buig)) {
-      DBI::dbDisconnect(buig)
-      message("Conexión a PostgreSQL cerrada exitosamente.")
-    }
-  })
+  # session$onSessionEnded(function() {
+  #   if (DBI::dbIsValid(buig)) {
+  #     DBI::dbDisconnect(buig)
+  #     message("Conexión a PostgreSQL cerrada exitosamente.")
+  #   }
+  # })
 }
 
 
