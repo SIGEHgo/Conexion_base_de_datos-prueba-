@@ -25,8 +25,8 @@ buig <- pool::dbPool(
 )
 
 onStop(function() {
-  pool::poolClose(buig)
   print("Desconexion del servidor")
+  pool::poolClose(buig)
 })
 
 
